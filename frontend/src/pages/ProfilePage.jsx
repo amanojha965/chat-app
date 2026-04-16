@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Camera, Mail, User } from "lucide-react";
 
@@ -6,20 +6,43 @@ const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
 
+  useEffect(() => {
+    return () => {
+      if (selectedImg) {
+        URL.revokeObjectURL(selectedImg);
+      }
+    };
+  }, [selectedImg]);
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    // validation
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file");
+      return;
+    }
 
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB");
+      return;
+    }
+    // preview
+    if (selectedImg) {
+      URL.revokeObjectURL(selectedImg);
+    }
 
-    reader.onload = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
-    };
+    const previewUrl = URL.createObjectURL(file);
+    setSelectedImg(previewUrl);
+
+    // send as FormData
+    const formData = new FormData();
+    formData.append("profilePic", file);
+
+    await updateProfile(formData);
   };
+
 
   return (
     <div className="h-screen pt-20">

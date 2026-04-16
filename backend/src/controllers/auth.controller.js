@@ -2,6 +2,7 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
+import fs from "fs";
 
 export const signup = async (req, res) => {
   let { fullName, email, password } = req.body;
@@ -90,24 +91,63 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic } = req.body;
+    // const { profilePic } = req.body;
+
+
     const userId = req.user._id;
 
-    if (!profilePic) {
-      return res.status(400).json({ message: "Profile pic is required" });
+
+    // console.log("req.file =", req.file);
+    // console.log("req.user._id =", req.user?._id);
+
+
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    // console.log("file path exists before upload:", fs.existsSync(req.file.path));
+    // console.log("uploading file path:", req.file.path);
+    // console.log("mimetype:", req.file.mimetype);
+    // console.log("size:", req.file.size);
+
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "chat-app/profile-pics",
+      resource_type: "image",
+    });
+    console.log("cloudinary result:", result);
+
+    // local file delete
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { profilePic: uploadResponse.secure_url },
+      req.user._id,
+      { profilePic: result.secure_url },
       { new: true }
-    );
+    ).select("-password");
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("error in update profile:", error);
-    res.status(500).json({ message: "Internal server error" });
+
+    // console.log("FULL CLOUDINARY ERROR:");
+    // console.log("message:", error.message);
+    // console.log("name:", error.name);
+    // console.log("http_code:", error.http_code);
+    // console.log("stack:", error.stack);
+    // console.log("error object:", error);
+
+
+
+    console.log("Cloudinary upload error:", error.message);
+
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    return res.status(500).json({ message: "Image upload failed" });
   }
 };
 
