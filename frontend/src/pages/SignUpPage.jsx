@@ -21,7 +21,9 @@ const SignUpPage = () => {
     if (!formData.email.trim()) return toast.error("Email is required");
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
+
     if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&].+)$/.test(formData.password)) return toast.error("Password must contain uppercase, lowercase, number and special character");
 
     return true;
   };
@@ -65,12 +67,18 @@ const SignUpPage = () => {
                 <input
                   type="text"
                   className={`input input-bordered w-full pl-10`}
+                  maxLength={30}
                   placeholder="John Doe"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 />
               </div>
+
             </div>
+            <div><p className="text-sm text-gray-500 mt-1">
+              {formData.fullName.length}/30 characters
+            </p></div>
+
 
             <div className="form-control">
               <label className="label">
@@ -83,12 +91,16 @@ const SignUpPage = () => {
                 <input
                   type="email"
                   className={`input input-bordered w-full pl-10`}
+                  maxLength={50}
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                 />
               </div>
             </div>
+            <div><p className="text-sm text-gray-500 mt-1">
+              {formData.email.length}/50 characters
+            </p></div>
 
             <div className="form-control">
               <label className="label">
@@ -101,6 +113,8 @@ const SignUpPage = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   className={`input input-bordered w-full pl-10`}
+                  maxLength={20}
+
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -118,6 +132,11 @@ const SignUpPage = () => {
                 </button>
               </div>
             </div>
+            <div><p className="text-sm text-gray-500 mt-1">
+              {formData.password.length}/20 characters
+
+              ------------"Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+            </p></div>
 
             <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
               {isSigningUp ? (

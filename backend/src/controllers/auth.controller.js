@@ -4,17 +4,25 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  let { fullName, email, password } = req.body;
+
   try {
+    email = email.toLowerCase().trim();
+
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
 
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const user = await User.findOne({ email });
+    if (!new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&].+)").test(password)) {
+      return res.status(400).json({ message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
+    }
+
+
 
     if (user) return res.status(400).json({ message: "Email already exists" });
 

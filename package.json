@@ -9,5 +9,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express-rate-limit": "^8.3.2",
+    "joi": "^18.1.2"
+  }
 }
