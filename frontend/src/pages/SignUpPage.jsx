@@ -23,7 +23,11 @@ const SignUpPage = () => {
     if (!formData.password) return toast.error("Password is required");
 
     if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&].+)$/.test(formData.password)) return toast.error("Password must contain uppercase, lowercase, number and special character");
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(formData.password)
+    ) {
+      return toast.error("Password must contain uppercase, lowercase, number and special character");
+    }
 
     return true;
   };

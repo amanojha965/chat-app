@@ -13,16 +13,11 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    if (!new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&].+)").test(password)) {
-      return res.status(400).json({ message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
-    }
-
-
+    const user = await User.findOne({ email });
 
     if (user) return res.status(400).json({ message: "Email already exists" });
 
