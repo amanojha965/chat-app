@@ -33,6 +33,7 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
+
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     try {
@@ -48,20 +49,47 @@ export const useChatStore = create((set, get) => ({
     if (!selectedUser) return;
 
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+      const { selectedUser } = get();
+
+      if (!selectedUser) return;
+
+      const isRelevantMessage =
+        newMessage.senderId?.toString() === selectedUser._id?.toString() ||
+        newMessage.receiverId?.toString() === selectedUser._id?.toString();
+
+      if (!isRelevantMessage) return;
 
       set({
         messages: [...get().messages, newMessage],
       });
     });
+
+    socket.on("messagesSeen", ({ senderId }) => {
+      const { messages, selectedUser } = get();
+
+      if (!selectedUser) return;
+
+      if (selectedUser._id?.toString() !== senderId?.toString()) return;
+
+      const updatedMessages = messages.map((msg) =>
+        msg.senderId?.toString() === selectedUser._id?.toString()
+          ? { ...msg, seen: true }
+          : msg
+      );
+
+      set({ messages: updatedMessages });
+    });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
     socket.off("newMessage");
+    socket.off("messagesSeen");
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),

@@ -10,23 +10,26 @@ const ChatHeader = () => {
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !selectedUser?._id) return;
 
-    socket.on("userTyping", (senderId) => {
-      if (senderId === selectedUser?._id) {
+    const handleTyping = (senderId) => {
+      if (senderId === selectedUser._id) {
         setIsTyping(true);
       }
-    });
+    };
 
-    socket.on("userStopTyping", (senderId) => {
-      if (senderId === selectedUser?._id) {
+    const handleStopTyping = (senderId) => {
+      if (senderId === selectedUser._id) {
         setIsTyping(false);
       }
-    });
+    };
+
+    socket.on("userTyping", handleTyping);
+    socket.on("userStopTyping", handleStopTyping);
 
     return () => {
-      socket.off("userTyping");
-      socket.off("userStopTyping");
+      socket.off("userTyping", handleTyping);
+      socket.off("userStopTyping", handleStopTyping);
     };
   }, [socket, selectedUser]);
 
@@ -34,7 +37,6 @@ const ChatHeader = () => {
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
               <img
@@ -44,11 +46,8 @@ const ChatHeader = () => {
             </div>
           </div>
 
-          {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
-
-            {/* 👇 UPDATED STATUS */}
             <p className="text-sm text-base-content/70">
               {isTyping
                 ? "Typing..."
@@ -59,7 +58,6 @@ const ChatHeader = () => {
           </div>
         </div>
 
-        {/* Close button */}
         <button onClick={() => setSelectedUser(null)}>
           <X />
         </button>
