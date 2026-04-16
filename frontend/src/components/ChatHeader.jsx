@@ -1,10 +1,34 @@
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
 const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, socket } = useAuthStore();
+
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("userTyping", (senderId) => {
+      if (senderId === selectedUser?._id) {
+        setIsTyping(true);
+      }
+    });
+
+    socket.on("userStopTyping", (senderId) => {
+      if (senderId === selectedUser?._id) {
+        setIsTyping(false);
+      }
+    });
+
+    return () => {
+      socket.off("userTyping");
+      socket.off("userStopTyping");
+    };
+  }, [socket, selectedUser]);
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -13,15 +37,24 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt={selectedUser.fullName}
+              />
             </div>
           </div>
 
           {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
+
+            {/* 👇 UPDATED STATUS */}
             <p className="text-sm text-base-content/70">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+              {isTyping
+                ? "Typing..."
+                : onlineUsers.includes(selectedUser._id)
+                  ? "Online"
+                  : "Offline"}
             </p>
           </div>
         </div>
@@ -34,4 +67,5 @@ const ChatHeader = () => {
     </div>
   );
 };
+
 export default ChatHeader;
