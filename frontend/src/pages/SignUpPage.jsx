@@ -138,8 +138,9 @@ const SignUpPage = () => {
             </div>
             <div><p className="text-sm text-gray-500 mt-1">
               {formData.password.length}/20 characters
-
-              ------------"Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+            </p></div>
+            <div><p className="text-sm text-gray-500 mt-1">
+              Password must be at least 6 characters and contain uppercase, lowercase, number and special character
             </p></div>
 
             <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
