@@ -7,6 +7,7 @@ import EmojiPicker from "emoji-picker-react";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
@@ -31,11 +32,11 @@ const MessageInput = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    // ✅ actual file (backend ke liye)
+    setSelectedImage(file);
+
+    // ✅ preview (UI ke liye)
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const removeImage = () => {
@@ -72,13 +73,17 @@ const MessageInput = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview) return;
+    if (!text.trim() && !selectedImage) return;
 
     try {
-      await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
-      });
+      const formData = new FormData();
+      formData.append("text", text.trim());
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      await sendMessage(formData);
 
       if (socket && authUser?._id && selectedUser?._id) {
         socket.emit("stopTyping", {
@@ -88,6 +93,7 @@ const MessageInput = () => {
       }
 
       setText("");
+      setSelectedImage(null);
       setImagePreview(null);
       setShowEmojiPicker(false);
 

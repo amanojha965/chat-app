@@ -1,3 +1,4 @@
+import fs from "fs";
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
@@ -42,15 +43,23 @@ export const getMessages = async (req, res) => {
 // 👇 Send message
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
-    const { id: receiverId } = req.params;
+    const { text } = req.body;
+    const receiverId = req.params.id;
     const senderId = req.user._id;
 
-    let imageUrl;
+    let imageUrl = "";
 
-    if (image) {
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "chat-app/messages",
+        resource_type: "image",
+      });
+
+      imageUrl = result.secure_url;
+
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
     }
 
     const newMessage = new Message({
@@ -58,22 +67,21 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
-      seen: false, // 👈 IMPORTANT
     });
 
     await newMessage.save();
 
-    // 👇 send real-time message
     const receiverSocketId = getReceiverSocketId(receiverId);
-
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("Error in sendMessage:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({ message: "Failed to send message" });
   }
 };
 
