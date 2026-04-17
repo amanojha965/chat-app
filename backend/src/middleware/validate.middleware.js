@@ -1,8 +1,8 @@
 export const validate = (schema) => {
     return (req, res, next) => {
         const { error, value } = schema.validate(req.body, {
-            abortEarly: false,     // saari errors ek saath
-            stripUnknown: true,    // extra fields remove
+            abortEarly: false,     
+            stripUnknown: true,   
         });
 
         if (error) {
@@ -12,7 +12,7 @@ export const validate = (schema) => {
             });
         }
 
-        req.body = value; // cleaned & validated data
+        req.body = value; 
 
         next();
     };

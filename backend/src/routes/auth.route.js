@@ -17,17 +17,17 @@ router.put("/update-profile", protectRoute, upload.single("profilePic"), updateP
 
 router.get("/check", protectRoute, checkAuth);
 
-router.get("/test-cloudinary", async (req, res) => {
-    try {
-        const result = await cloudinary.api.ping();
-        res.json(result);
-    } catch (error) {
-        console.log("Cloudinary test error:", error);
-        res.status(500).json({
-            message: error.message,
-            error,
-        });
-    }
-});
+// router.get("/test-cloudinary", async (req, res) => {
+//     try {
+//         const result = await cloudinary.api.ping();
+//         res.json(result);
+//     } catch (error) {
+//         console.log("Cloudinary test error:", error);
+//         res.status(500).json({
+//             message: error.message,
+//             error,
+//         });
+//     }
+// });
 
 export default router;

@@ -4,7 +4,7 @@ import Message from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
-// 👇 Sidebar users
+//  Sidebar users
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
@@ -20,7 +20,7 @@ export const getUsersForSidebar = async (req, res) => {
   }
 };
 
-// 👇 Get chat messages
+//  Get chat messages
 export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
@@ -40,7 +40,7 @@ export const getMessages = async (req, res) => {
   }
 };
 
-// 👇 Send message
+//  Send message
 export const sendMessage = async (req, res) => {
   try {
     const { text } = req.body;
@@ -85,7 +85,7 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-// 👇 Mark messages as seen + socket emit
+//  Mark messages as seen + socket emit
 export const markMessagesAsSeen = async (req, res) => {
   try {
     const { id: senderId } = req.params;
@@ -102,7 +102,7 @@ export const markMessagesAsSeen = async (req, res) => {
       }
     );
 
-    // 👇 sender ko notify karo (REAL-TIME)
+    // sender notify (REAL-TIME)
     const senderSocketId = getReceiverSocketId(senderId);
 
     if (senderSocketId) {
